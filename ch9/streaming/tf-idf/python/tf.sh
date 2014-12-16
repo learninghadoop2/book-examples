@@ -1,0 +1,11 @@
+/usr/bin/hadoop  jar /opt/cloudera/parcels/CDH/lib/hadoop-mapreduce/hadoop-streaming.jar \
+-D map.output.key.field.separator=\t \
+-D stream.num.map.output.key.fields=2 \
+-D mapreduce.output.key.comparator.class=org.apache.hadoop.mapreduce.lib.KeyFieldBasedComparator \
+-D  mapreduce.text.key.comparator.options=-k1,2 \
+-input /tmp/tweets.json \
+-output /tmp/tf-out.tsv \
+-file map-tf.py \
+-mapper "python map-tf.py" \
+-file reduce-tf.py \
+-reducer "python reduce-tf.py"

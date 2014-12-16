@@ -1,0 +1,5 @@
+export TWITTER_CONSUMER_KEY=<value>
+export TWITTER_CONSUMER_SECRET=<value>
+export TWITTER_ACCESS_KEY=<value>
+export TWITTER_ACCESS_SECRET=<value>
+

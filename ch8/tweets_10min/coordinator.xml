@@ -1,0 +1,35 @@
+<coordinator-app name="tweets-10min-coordinator" frequency="${freq}" start="${startTime}" end="${endTime}" timezone="UTC"
+xmlns="uri:oozie:coordinator:0.2">
+<action>
+        <workflow>
+                <app-path>${workflowPath}</app-path>
+                <configuration>
+<property>
+<name>workflowRoot</name>
+<value>${workflowRoot}</value>
+</property>
+                        <property>
+             <name>dbName</name>
+             <value>${dbName}</value>
+            </property>
+<property>
+             <name>partitionKey</name>
+             <value>${coord:formatTime(coord:dateOffset(coord:nominalTime(), -1, 'DAY'), 'yyyyMMddhhmm')}</value>
+            </property>
+<property>
+<name>exec</name>
+<value>gettweets.sh</value>
+</property>
+<property>
+<name>inputDir</name>
+<value>/tmp/tweets</value>
+</property>
+<property>
+<name>subWorkflowRoot</name>
+<value>${subWorkflowRoot}</value>
+</property>
+         </configuration>
+        </workflow>
+</action>
+</coordinator-app>
+

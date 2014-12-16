@@ -1,0 +1,8 @@
+DEFINE top_n(rel, col, n) 
+    RETURNS top_n_items {
+        grpd = GROUP $rel BY $col;
+        cnt_items = FOREACH grpd 
+GENERATE FLATTEN(group), COUNT($rel) AS cnt;
+        cnt_items_sorted = ORDER cnt_items BY cnt DESC;
+        $top_n_items = LIMIT cnt_items_sorted $n;
+};

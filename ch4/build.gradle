@@ -1,0 +1,109 @@
+apply plugin:'java'
+apply plugin: 'scala'
+
+version = projectVersion
+
+ext {
+samzaVersion = "0.7.0"
+scalaVersion = "2.10"
+scalaTestVersion = "2.1.1"
+kafkaVersion = "0.8.1.1"
+slf4jVersion = "1.7.7"
+}
+
+  configurations {
+    // Remove transitive dependencies from Zookeeper that we don't want.
+    compile.exclude group: 'javax.jms', module: 'jms'
+    compile.exclude group: 'com.sun.jdmk', module: 'jmxtools'
+    compile.exclude group: 'com.sun.jmx', module: 'jmxri'
+deploy
+  }
+
+repositories{
+mavenCentral()
+
+    // Required for Kafka/Samza.
+    maven {
+      url 'https://repository.apache.org/content/groups/public'
+    }
+}
+
+dependencies {
+compile 'org.apache.hadoop:hadoop-hdfs:2.2.0'
+compile "org.apache.samza:samza-api:$samzaVersion"
+compile "org.apache.samza:samza-core_$scalaVersion:$samzaVersion"
+compile "org.apache.samza:samza-serializers_$scalaVersion:$samzaVersion"
+deploy "org.apache.samza:samza-shell:$samzaVersion:dist@tgz"
+compile "org.apache.samza:samza-yarn_$scalaVersion:$samzaVersion"
+compile "org.apache.samza:samza-kv_$scalaVersion:$samzaVersion"
+compile "org.apache.samza:samza-kafka_$scalaVersion:$samzaVersion"
+compile 'org.springframework:spring-context:4.0.6.RELEASE'
+    compile "org.apache.kafka:kafka_$scalaVersion:$kafkaVersion"
+compile 'com.googlecode.json-simple:json-simple:1.1'
+compile 'org.apache.tika:tika-parsers:1.6'
+    compile "org.slf4j:slf4j-api:$slf4jVersion"
+    compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
+testCompile  "junit:junit:4.0+"
+    testCompile "org.mockito:mockito-all:1.9.5"
+    testCompile "org.scalatest:scalatest_$scalaVersion:$scalaTestVersion"
+}
+
+task copyJars(dependsOn: ['jar'], type: Copy) {
+//from project.configurations.runtime.fileCollection().filter{it.name.endsWith("sh")}
+from project.configurations.runtime
+    into  "build/samza-package/$project.name/lib"
+
+from jar
+    into  "build/samza-package/$project.name/lib"
+}
+
+task copyScripts(type: Copy) {
+FileTree myfiles =tarTree(configurations.deploy.files.toArray()[0])
+
+from myfiles.filter{it.name.endsWith("sh")}
+    into "build/samza-package/$project.name/bin"
+}
+
+task copyConfigs(type: Copy) {
+from 'src/main/resources'
+    into "build/samza-package/$project.name/conf"
+}
+
+task targz(dependsOn: ['copyJars', 'copyScripts', 'copyConfigs'], type: Tar) {
+ extension = 'tar.gz'
+ baseName = "$rootProject.name"
+ compression = Compression.GZIP
+from "build/samza-package/$project.name"
+}
+
+task runTwitterParser (dependsOn:'targz', type: Exec) {
+workingDir "build/samza-package/$project.name"
+commandLine 'bin/run-job.sh',  '--config-factory=org.apache.samza.config.factories.PropertiesConfigFactory', '--config-path=conf/twitter-parser.properties'
+}
+
+task runTextCleanup (dependsOn:'targz', type: Exec) {
+workingDir "build/samza-package/$project.name"
+commandLine 'bin/run-job.sh',  '--config-factory=org.apache.samza.config.factories.PropertiesConfigFactory', '--config-path=conf/textcleanup.properties'
+}
+
+task runTwitterStatistics (dependsOn:'targz', type: Exec) {
+workingDir "build/samza-package/$project.name"
+commandLine 'bin/run-job.sh',  '--config-factory=org.apache.samza.config.factories.PropertiesConfigFactory', '--config-path=conf/twitter-statistics.properties'
+}
+
+task runTwitterSentiment (dependsOn:'targz', type: Exec) {
+workingDir "build/samza-package/$project.name"
+commandLine 'bin/run-job.sh',  '--config-factory=org.apache.samza.config.factories.PropertiesConfigFactory', '--config-path=conf/twitter-sentiment.properties'
+}
+
+task runTwitterStatefulSentiment (dependsOn:'targz', type: Exec) {
+workingDir "build/samza-package/$project.name"
+commandLine 'bin/run-job.sh',  '--config-factory=org.apache.samza.config.factories.PropertiesConfigFactory', '--config-path=conf/twitter-stateful-sentiment.properties'
+}
+
+task runTasks(dependsOn:['runTwitterParser', 'runTwitterStatistics', 'runTextCleanup', 'runTwitterStatefulSentiment'])  {
+}
+
+task wrapper(type: Wrapper) {
+gradleVersion '2.0'
+}

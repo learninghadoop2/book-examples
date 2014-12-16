@@ -1,0 +1,39 @@
+<workflow-app xmlns="uri:oozie:workflow:0.4" name="create-workflow">
+    <start to="setup-fork-node"/>
+<fork name="setup-fork-node">
+<path start="setup-filesystem-node" />
+<path start="create-tables-node" />
+</fork>
+<action name="setup-filesystem-node">
+<fs>
+<delete path="${nameNode}/tmp/tweets"/>
+<mkdir path="${nameNode}/tmp/tweets"/>
+<chmod path="${nameNode}/tmp/tweets" permissions="777"/>
+</fs>
+        <ok to="create-join-node"/>
+        <error to="fail"/>
+</action>
+    <action name="create-tables-node">
+       <hive xmlns="uri:oozie:hive-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <job-xml>${workflowRoot}/hive-site.xml</job-xml>
+            <configuration>
+                <property>
+                    <name>mapred.compress.map.output</name>
+                    <value>true</value>
+                </property>
+            </configuration>
+            <script>${workflowRoot}/hive/create_tables.hql</script>
+            <param>dbName=${dbName}</param>
+        </hive>
+
+        <ok to="create-join-node"/>
+        <error to="fail"/>
+    </action>
+<join name="create-join-node" to="end"/>
+    <kill name="fail">
+        <message>Pig action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <end name="end"/>
+</workflow-app>

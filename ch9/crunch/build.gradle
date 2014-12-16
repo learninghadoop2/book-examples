@@ -1,0 +1,51 @@
+apply plugin:'java'
+
+repositories{
+mavenCentral()
+    maven {
+      url 'https://repository.cloudera.com/artifactory/cloudera-repos/'
+    }
+}
+dependencies {
+compile 'org.apache.crunch:crunch-core:0.9.0-cdh5.0.3'
+compile 'org.apache.hadoop:hadoop-common:2.3.0-cdh5.0.3'
+
+
+compile 'com.googlecode.json-simple:json-simple:1.1.1'
+}
+
+task wordcount(type:JavaExec) {
+ main = 'com.learninghadoop2.crunch.WordCount'
+ classpath = sourceSets.main.runtimeClasspath
+
+if (project.hasProperty('cmdargs')) {
+ args(cmdargs.split(','))
+}
+
+}
+
+task hashtagcount(type:JavaExec) {
+ main = 'com.learninghadoop2.crunch.HashtagCount'
+ classpath = sourceSets.main.runtimeClasspath
+
+if (project.hasProperty('cmdargs')) {
+ args(cmdargs.split(','))
+}
+}
+
+task wrapper(type: Wrapper) {
+gradleVersion '2.0'
+}
+
+task copyJars(dependsOn: ['jar'], type: Copy) {
+//from project.configurations.runtime.fileCollection().filter{it.name.endsWith("sh")}
+from project.configurations.runtime
+    into  "build/libjars/$project.name/lib"
+
+}
+
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

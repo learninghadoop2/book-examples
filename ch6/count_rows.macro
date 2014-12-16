@@ -1,0 +1,2 @@
+DEFINE count_rows(X) 
+RETURNS cnt { grpd = group $X all; $cnt = foreach grpd generate COUNT($X); };

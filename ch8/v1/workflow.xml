@@ -1,0 +1,38 @@
+<workflow-app xmlns="uri:oozie:workflow:0.4" name="v1">
+    <start to="fs-node"/>
+<action name="fs-node">
+<fs>
+<delete path="${nameNode}/tmp/tweets"/>
+<mkdir path="${nameNode}/tmp/tweets"/>
+<chmod path="${nameNode}/tmp/tweets" permissions="777"/>
+</fs>
+        <ok to="shell-node"/>
+        <error to="fail"/>
+</action>
+
+    <action name="shell-node">
+        <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+<prepare>
+<mkdir path="${nameNode}/tmp/tweets"/>
+</prepare>
+            <configuration>
+                <property>
+                    <name>mapred.job.queue.name</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+            <exec>${EXEC}</exec>
+<file>${workflowRoot}/${EXEC}</file>
+<file>${workflowRoot}/twitter.keys</file>
+<file>${workflowRoot}/stream.py</file>
+        </shell>
+        <ok to="end"/>
+        <error to="fail"/>
+    </action>
+    <kill name="fail">
+        <message>Shell action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <end name="end"/>
+</workflow-app>

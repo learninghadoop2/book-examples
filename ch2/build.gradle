@@ -1,0 +1,23 @@
+apply plugin:'java'
+
+repositories{
+mavenCentral()
+
+    // Required for Kafka/Samza.
+    maven {
+      url 'https://repository.apache.org/content/groups/public'
+    }
+}
+
+dependencies {
+compile 'org.apache.avro:avro:1.7.7'
+}
+
+  task run(type:JavaExec) {
+    main = 'com.learninghadoop2.avro.AvroParse'
+ classpath = sourceSets.main.runtimeClasspath
+}
+
+task wrapper(type: Wrapper) {
+gradleVersion '2.0'
+}

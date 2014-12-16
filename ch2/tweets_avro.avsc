@@ -1,0 +1,14 @@
+{
+ "namespace": "com.learninghadoop2.avrotables",
+ "type":"record",
+ "name":"tweets_avro",
+ "fields":[
+ 	{"name": "created_at", "type": ["null" ,"string"]},
+ 	{"name": "tweet_id_str", "type": ["null","string"]},
+ 	{"name": "text","type":["null","string"]},
+ 	{"name": "in_reply_to", "type": ["null","string"]},
+ 	{"name": "is_retweeted", "type": ["null","string"]},
+ 	{"name": "user_id", "type": ["null","string"]},
+	{"name": "place_id", "type": ["null","string"]}
+	]
+}

@@ -1,0 +1,76 @@
+<workflow-app xmlns="uri:oozie:workflow:0.4" name="v2">
+    <start to="fs-node"/>
+<action name="fs-node">
+<fs>
+<delete path="${nameNode}/tmp/tweets"/>
+<mkdir path="${nameNode}/tmp/tweets"/>
+<chmod path="${nameNode}/tmp/tweets" permissions="777"/>
+</fs>
+        <ok to="shell-node"/>
+        <error to="fail"/>
+</action>
+    <action name="shell-node">
+        <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>mapred.job.queue.name</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+            <exec>${EXEC}</exec>
+<file>${workflowRoot}/scripts/${EXEC}</file>
+<file>${workflowRoot}/scripts/twitter.keys</file>
+<file>${workflowRoot}/scripts/stream.py</file>
+        </shell>
+        <ok to="pig-node"/>
+        <error to="fail"/>
+    </action>
+    <action name="pig-node">
+<pig>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+<prepare>
+<delete path="${nameNode}/${outputDir}"/>
+<mkdir path="${nameNode}/${outputDir}"/>
+</prepare>
+            <configuration>
+                <property>
+                    <name>mapred.job.queue.name</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+            <script>${workflowRoot}/pig/extract_for_hive.pig</script>
+          <argument>-param</argument>
+          <argument>inputDir=${inputDir}</argument>
+          <argument>-param</argument>
+          <argument>outputDir=${outputDir}</argument>
+        </pig>
+        <ok to="hive-node"/>
+        <error to="fail"/>
+    </action>
+    <action name="hive-node">
+       <hive xmlns="uri:oozie:hive-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <job-xml>${workflowRoot}/hive-site.xml</job-xml>
+            <configuration>
+                <property>
+                    <name>mapred.compress.map.output</name>
+                    <value>true</value>
+                </property>
+            </configuration>
+            <script>${workflowRoot}/hive/create.hql</script>
+            <param>dbName=${dbName}</param>
+            <param>ingestDir=${ingestDir}</param>
+        </hive>
+
+        <ok to="end"/>
+        <error to="fail"/>
+    </action>
+    <kill name="fail">
+        <message>Workflow failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <end name="end"/>
+</workflow-app>

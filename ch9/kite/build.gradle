@@ -1,0 +1,48 @@
+apply plugin:'java'
+
+repositories{
+mavenCentral()
+    maven {
+      url 'https://repository.cloudera.com/artifactory/cloudera-repos/'
+    }
+}
+dependencies {
+compile 'org.kitesdk:kite-data-core:0.17.0'
+compile 'org.kitesdk:kite-data-hive:0.17.0'
+compile 'org.kitesdk:kite-morphlines-core:0.17.0'
+compile 'org.kitesdk:kite-morphlines-json:0.17.0'
+compile 'org.apache.hadoop:hadoop-common:2.3.0-cdh5.0.3'
+compile 'org.apache.hadoop:hadoop-mapreduce-client-core:2.3.0-cdh5.0.3'
+compile 'org.apache.hadoop:hadoop-mapreduce-client-common:2.3.0-cdh5.0.3'
+compile 'org.apache.hive.hcatalog:hive-hcatalog-core:0.12.0-cdh5.0.0'
+compile 'org.apache.hive:hive-metastore:0.12.0-cdh5.0.0'
+'com.fasterxml.jackson.core:jackson-databind:2.4.3'
+
+}
+
+task copyJars(dependsOn: ['jar'], type: Copy) {
+//from project.configurations.runtime.fileCollection().filter{it.name.endsWith("sh")}
+from project.configurations.runtime
+    into  "build/libjars/$project.name/lib"
+
+}
+
+task hcatreader(type:JavaExec) {
+ main = 'com.learninghadoop2.kite.data.HCatalogReaderKite'
+ classpath = sourceSets.main.runtimeClasspath
+
+if (project.hasProperty('cmdargs')) {
+ args(cmdargs.split(','))
+}
+
+}
+
+task wrapper(type: Wrapper) {
+gradleVersion '2.0'
+}
+
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

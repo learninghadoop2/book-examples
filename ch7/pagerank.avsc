@@ -1,0 +1,9 @@
+{
+	"type":"record",
+	"name":"record",
+	"fields": [
+		{"name":"topic","type":["null","int"]},
+		{"name":"source","type":["null","int"]},
+		{"name":"rank","type":["null","float"]}
+	]
+}

@@ -1,0 +1,76 @@
+<workflow-app xmlns="uri:oozie:workflow:0.4" name="v7">
+<global>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <job-xml>${workflowRoot}/hive-site.xml</job-xml>
+            <configuration>
+                <property>
+                    <name>mapred.job.queue.name</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+</global>
+    <start to="create-subworkflow-node"/>
+    <action name="create-subworkflow-node">
+        <sub-workflow>
+            <app-path>${subWorkflowRoot}</app-path>
+            <propagate-configuration/>
+        </sub-workflow>
+        <ok to="gettweets-node"/>
+        <error to="fail"/>
+    </action>
+    <action name="gettweets-node">
+        <shell xmlns="uri:oozie:shell-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <job-xml>${workflowRoot}/hive-site.xml</job-xml>
+            <configuration>
+                <property>
+                    <name>mapred.job.queue.name</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+            <exec>${EXEC}</exec>
+<file>${workflowRoot}/scripts/${EXEC}</file>
+<file>${workflowRoot}/scripts/twitter.keys</file>
+<file>${workflowRoot}/scripts/stream.py</file>
+        </shell>
+        <ok to="hcat-ingest-node"/>
+        <error to="fail"/>
+    </action>
+    <action name="hcat-ingest-node">
+<pig>
+            <configuration>
+<property>
+     <name>oozie.action.sharelib.for.pig</name>
+     <value>pig,hcatalog</value>
+</property>
+            </configuration>
+            <script>${workflowRoot}/pig/extract_to_hcat.pig</script>
+          <param>inputDir=${inputDir}</param>
+          <param>dbName=${dbName}</param>
+<param>partitionKey=${partitionKey}</param>
+</pig>
+        <ok to="derived-data-node"/>
+        <error to="fail"/>
+    </action>
+    <action name="derived-data-node">
+       <hive xmlns="uri:oozie:hive-action:0.4">
+            <configuration>
+                <property>
+                    <name>mapred.compress.map.output</name>
+                    <value>true</value>
+                </property>
+            </configuration>
+            <script>${workflowRoot}/hive/populate_unique_users.hql</script>
+            <param>dbName=${dbName}</param>
+        </hive>
+
+        <ok to="end"/>
+        <error to="fail"/>
+    </action>
+    <kill name="fail">
+        <message>Pig action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <end name="end"/>
+</workflow-app>
