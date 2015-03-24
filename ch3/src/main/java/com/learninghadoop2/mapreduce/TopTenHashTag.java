@@ -86,7 +86,7 @@ public class TopTenHashTag extends Configured implements Tool
         job.setReducerClass(TopTenReducer.class);
         job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(Text.class);
-        job.SetNumReduceTasks(1);
+        job.setNumReduceTasks(1);
         
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
