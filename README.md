@@ -5,10 +5,21 @@ This repository contains examples (and errata) for [Learning Hadoop 2](http://le
 ## Requirements
 
 Throughout the book we use Cloudera CDH 5.0 and Amazon EMR as reference systems. All examples target, 
-and have been tested with, Java 7.
+and have been tested with Java 7.
 
-## Build the examples
-The easiest way to build the examples, with CDH 5.0 dependencies, is to use the provided Gradle and sbt scripts.
+**Update (2021-05-16):** as of February 2021 Cloudera CDH is not available to the general public anymore. 
+
+More information about the transition to private repositories can be found at https://community.cloudera.com/t5/Product-Announcements/Transition-to-private-repositories-for-CDH-HDP-and-HDF/td-p/311064.
+
+### Building the examples
+While (some) jar dependencies are still available at [https://repository.cloudera.com/artifactory/cloudera-repos/](https://repository.cloudera.com/artifactory/cloudera-repos/), we updated the chapters build scripts to use vanilla version of the dependencies available through regular maven channels.
+
+### Running the examples
+
+Alternatives to the (virtualized) Hadoop environment that was provided by CDH VM are avaialble at:
+ * [Cloudera Hortonworks Sandbox](https://www.cloudera.com/downloads/hortonworks-sandbox.html).
+ * [BDE docker deployment](https://github.com/big-data-europe/docker-hadoop).
+ * [Apache Big Top](https://bigtop.apache.org/)
 
 ### Gradle
 We use [Gradle](https://gradle.org) to compile Java code and collect the required class files into a single JAR file.
@@ -71,12 +82,7 @@ Or, it can be packaged into a JAR file with:
 $ sbt package
 ```
 
-For Spark in standalone mode, an helper script to execute compiled classes can be generated with:
-```{bash}
-$ sbt add-start-script-tasks
-$ sbt start-script
-```
-The helper can be invoked as follows:
+And run with
 
 ```{bash}
 $ target/start <class name> <master> <param1> … <param n>
@@ -85,7 +91,7 @@ $ target/start <class name> <master> <param1> … <param n>
 
 #### YARN on CDH5
 
-To run the examples on a YARN grid on CDH5, you can build a JAR file using:
+To run the examples on a YARN grid, you can build a JAR file using:
 ```{bash}
 $ sbt package
 ```
