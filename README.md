@@ -14,6 +14,10 @@ More information about the transition to private repositories can be found at ht
 ### Building the examples
 While (some) jar dependencies are still available at [https://repository.cloudera.com/artifactory/cloudera-repos/](https://repository.cloudera.com/artifactory/cloudera-repos/), we updated the chapters build scripts to use vanilla version of the dependencies available through regular maven channels.
 
+The updated build scripts have been tested with Java 8 on the [AdoptOpenJDK](https://adoptopenjdk.net/) virtual machine.
+
+Original codes and build scripts can be found at https://github.com/learninghadoop2/book-examples/releases/tag/v1.0.0.
+
 ### Running the examples
 
 Alternatives to the (virtualized) Hadoop environment that was provided by CDH VM are avaialble at:
