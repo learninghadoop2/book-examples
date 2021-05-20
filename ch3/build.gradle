@@ -1,20 +1,23 @@
 apply plugin:'java'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
-repositories{
-mavenCentral()
-    maven {
-      url 'https://repository.cloudera.com/artifactory/cloudera-repos/'
-    }
+// Use maven central (over https) instead of Cloudera repos
+repositories {
+   maven {
+      url = 'https://repo1.maven.org/maven2/'
+   }
 }
+
+// Drop -cdh5.0.3 versions of Hadoop pacakges. Use vanilla version instead. 
 dependencies {
-compile 'org.kitesdk:kite-data-core:0.17.0'
-compile 'org.kitesdk:kite-morphlines-core:0.17.0'
-compile 'org.apache.hadoop:hadoop-common:2.3.0-cdh5.0.3'
-compile 'org.apache.hadoop:hadoop-mapreduce-client-core:2.3.0-cdh5.0.3'
-compile 'org.apache.hadoop:hadoop-mapreduce-client-common:2.3.0-cdh5.0.3'
-compile 'org.apache.hive.hcatalog:hive-hcatalog-core:0.12.0-cdh5.0.0'
-compile 'org.apache.hive:hive-metastore:0.12.0-cdh5.0.0'
+   compile 'org.kitesdk:kite-data-core:0.17.0'
+   compile 'org.kitesdk:kite-morphlines-core:0.17.0'
+   compile 'org.apache.hadoop:hadoop-common:2.3.0'
+   compile 'org.apache.hadoop:hadoop-mapreduce-client-core:2.3.0'
+   compile 'org.apache.hadoop:hadoop-mapreduce-client-common:2.3.0'
+   compile 'org.apache.hive.hcatalog:hive-hcatalog-core:0.13.0' // 0.12 is not available on mavencentral
+   compile 'org.apache.hive:hive-metastore:0.13.0' // upgrade 0.12 -> 0.13 to match hive-hcatalog-core
 
-testCompile  "junit:junit:4.0+"
+   testCompile  "junit:junit:4.0+"
 }
-
